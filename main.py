@@ -631,3 +631,64 @@ class ImprovedRentalInventory:
         Button(button_frame, text="Reset Form", font=('Segoe UI', 10),
                bg=self.colors['warning'], fg=self.colors['white'],
                command=self.reset_form).pack(side=LEFT)
+    
+    def setup_responsive_history_tab(self):
+        """Setup responsive history tab"""
+        history_main = Frame(self.history_tab, bg=self.colors['light'])
+        history_main.pack(fill=BOTH, expand=True, padx=20, pady=20)
+        
+        # Search and filter section
+        search_frame = ttk.LabelFrame(history_main, text="Search & Filter", padding=15)
+        search_frame.pack(fill=X, pady=(0, 20))
+        
+        search_frame.grid_columnconfigure(1, weight=1)
+        
+        Label(search_frame, text="Search:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=0, sticky="w", padx=(0, 10))
+        
+        search_entry = Entry(search_frame, textvariable=self.search_var, font=('Segoe UI', 10))
+        search_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
+        search_entry.bind('<KeyRelease>', lambda e: self.search_rentals())
+        
+        Button(search_frame, text="Search", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['accent'], fg=self.colors['white'],
+               command=self.search_rentals).grid(row=0, column=2, padx=5)
+        
+        Button(search_frame, text="Show All", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'],
+               command=self.load_all_rentals).grid(row=0, column=3, padx=5)
+        
+        Button(search_frame, text="Export PDF", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['danger'], fg=self.colors['white'],
+               command=self.export_to_pdf).grid(row=0, column=4, padx=5)
+        
+        # History treeview
+        tree_frame = Frame(history_main)
+        tree_frame.pack(fill=BOTH, expand=True)
+        
+        # Configure treeview with better columns
+        columns = ('ID', 'Receipt', 'Customer', 'Product', 'Days', 'Total', 'Date')
+        self.history_tree = ttk.Treeview(tree_frame, columns=columns, show='headings', height=20)
+        
+        # Define headings and column widths
+        column_widths = {'ID': 80, 'Receipt': 150, 'Customer': 150, 'Product': 120, 'Days': 80, 'Total': 100, 'Date': 150}
+        
+        for col in columns:
+            self.history_tree.heading(col, text=col, command=lambda c=col: self.sort_treeview(c))
+            self.history_tree.column(col, width=column_widths.get(col, 100), anchor='center')
+        
+        # Scrollbars
+        v_scrollbar = ttk.Scrollbar(tree_frame, orient=VERTICAL, command=self.history_tree.yview)
+        h_scrollbar = ttk.Scrollbar(tree_frame, orient=HORIZONTAL, command=self.history_tree.xview)
+        
+        self.history_tree.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+        
+        # Pack treeview and scrollbars
+        self.history_tree.grid(row=0, column=0, sticky="nsew")
+        v_scrollbar.grid(row=0, column=1, sticky="ns")
+        h_scrollbar.grid(row=1, column=0, sticky="ew")
+        
+        tree_frame.grid_rowconfigure(0, weight=1)
+        tree_frame.grid_columnconfigure(0, weight=1)
+        
+        # Load initial data
+        self.load_all_rentals()
