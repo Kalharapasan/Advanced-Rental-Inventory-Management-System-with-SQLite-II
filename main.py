@@ -1231,6 +1231,29 @@ Phone: (555) 123-4567
         self.customer_details_label.config(text="No customer selected")
         
         messagebox.showinfo("Reset", "Form has been reset successfully!")
+    
+    def print_receipt(self):
+        """Print or save receipt"""
+        try:
+            if not self.txtReceipt.get("1.0", "end-1c").strip():
+                messagebox.showwarning("Warning", "No receipt to print. Please calculate total first.")
+                return
+            
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                title="Save Receipt"
+            )
+            
+            if filename:
+                with open(filename, 'w') as f:
+                    f.write(self.txtReceipt.get("1.0", "end-1c"))
+                messagebox.showinfo("Success", f"Receipt saved to {filename}")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save receipt: {str(e)}")
+    
+    
         
         
 
