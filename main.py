@@ -1730,6 +1730,19 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to refresh charts: {str(e)}")
+    
+    def refresh_quick_stats(self):
+        """Refresh the quick statistics in the header"""
+        # Re-create quick stats to update values
+        for widget in self.root.winfo_children():
+            if isinstance(widget, Frame) and widget.winfo_height() == 80: # Assuming header frame has fixed height
+                for child in widget.winfo_children():
+                    if isinstance(child, Frame): # This is the stats_frame
+                        for stat_label in child.winfo_children():
+                            stat_label.destroy() # Clear old labels
+                        self.create_quick_stats(child) # Re-create stats
+                        break
+                break
 
 
 if __name__ == '__main__':
