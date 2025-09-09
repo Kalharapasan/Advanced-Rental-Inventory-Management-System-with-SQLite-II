@@ -126,3 +126,4 @@ class DatabaseManager:
         conn.close()
         return results
     
+        def search_rentals(self, search_term):
