@@ -1232,6 +1232,42 @@ Phone: (555) 123-4567
         
         messagebox.showinfo("Reset", "Form has been reset successfully!")
     
+    # Database and display methods
+    def load_all_rentals(self):
+        """Load all rentals with customer names"""
+        try:
+            for item in self.history_tree.get_children():
+                self.history_tree.delete(item)
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            # Join with customers table to get names
+            cursor.execute('''
+                SELECT r.rental_id, r.receipt_ref, c.customer_name, r.product_type,
+                       r.no_days, r.total, r.created_date
+                FROM rentals r
+                LEFT JOIN customers c ON r.customer_id = c.customer_id
+                ORDER BY r.created_date DESC
+            ''')
+            
+            rentals = cursor.fetchall()
+            conn.close()
+            
+            for rental in rentals:
+                self.history_tree.insert('', 'end', values=(
+                    rental[0],  # rental_id
+                    rental[1],  # receipt_ref
+                    rental[2] or 'Unknown',  # customer_name
+                    rental[3],  # product_type
+                    rental[4],  # no_days
+                    f"£{rental[5]:.2f}" if rental[5] else "£0.00",  # total
+                    rental[6][:16] if rental[6] else ""  # created_date
+                ))
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load rental history: {str(e)}")
+    
     def print_receipt(self):
         """Print or save receipt"""
         try:
