@@ -1514,7 +1514,79 @@ Phone: (555) 123-4567
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate analytics: {str(e)}")
         
-        
+    def show_monthly_revenue(self):
+        """Show monthly revenue trends"""
+        try:
+            self.fig.clear()
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT strftime('%Y-%m', created_date) as month, 
+                       SUM(total) as revenue, COUNT(*) as count,
+                       AVG(total) as avg_rental
+                FROM rentals 
+                WHERE created_date >= date('now', '-12 months')
+                GROUP BY strftime('%Y-%m', created_date)
+                ORDER BY month
+            ''')
+            
+            data = cursor.fetchall()
+            conn.close()
+            
+            if not data:
+                ax = self.fig.add_subplot(111)
+                ax.text(0.5, 0.5, 'No data available for the last 12 months', 
+                       transform=ax.transAxes, ha='center', va='center',
+                       fontsize=16, color='gray')
+                ax.set_title('Monthly Revenue Trends')
+                self.canvas.draw()
+                return
+            
+            months = [datetime.datetime.strptime(row[0], '%Y-%m').strftime('%b %Y') for row in data]
+            revenues = [row[1] or 0 for row in data]
+            counts = [row[2] for row in data]
+            avg_rentals = [row[3] or 0 for row in data]
+            
+            # Create subplots
+            ax1 = self.fig.add_subplot(3, 1, 1)
+            ax2 = self.fig.add_subplot(3, 1, 2)
+            ax3 = self.fig.add_subplot(3, 1, 3)
+            
+            # Revenue chart
+            bars1 = ax1.bar(months, revenues, color='#27ae60', alpha=0.7)
+            ax1.set_title('Monthly Revenue', fontweight='bold')
+            ax1.set_ylabel('Revenue (£)')
+            ax1.tick_params(axis='x', rotation=45)
+            
+            # Add trend line
+            if len(revenues) > 1:
+                z = np.polyfit(range(len(revenues)), revenues, 1)
+                p = np.poly1d(z)
+                ax1.plot(range(len(revenues)), p(range(len(revenues))), 
+                        color='red', linestyle='--', alpha=0.8, label='Trend')
+                ax1.legend()
+            
+            # Count chart
+            bars2 = ax2.bar(months, counts, color='#3498db', alpha=0.7)
+            ax2.set_title('Monthly Rental Count', fontweight='bold')
+            ax2.set_ylabel('Number of Rentals')
+            ax2.tick_params(axis='x', rotation=45)
+            
+            # Average rental value
+            line3 = ax3.plot(months, avg_rentals, marker='o', color='#f39c12', linewidth=2, markersize=6)
+            ax3.set_title('Average Rental Value', fontweight='bold')
+            ax3.set_ylabel('Average Value (£)')
+            ax3.tick_params(axis='x', rotation=45)
+            ax3.grid(True, alpha=0.3)
+            
+            self.fig.suptitle('Monthly Performance Analysis', fontsize=16, fontweight='bold')
+            plt.tight_layout()
+            self.canvas.draw()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate monthly report: {str(e)}")
 
 
 if __name__ == '__main__':
