@@ -1012,6 +1012,22 @@ class ImprovedRentalInventory:
             # Auto-calculate total if product is selected
             self.auto_calculate_dates()
     
+    def auto_calculate_dates(self):
+        """Auto-calculate settlement and payment details"""
+        try:
+            if self.LastCreditReview.get() and self.CostPDay.get():
+                days = int(self.LastCreditReview.get())
+                rate = float(self.CostPDay.get().replace('£', ''))
+                
+                self.SettDueDay.set(str(int(rate)))
+                
+                # Calculate base amount for settlement
+                base_amount = days * rate
+                settlement = f"£{base_amount:.2f}"
+                self.PayDueDay.set(settlement)
+                
+        except (ValueError, AttributeError):
+            pass
 
 
 if __name__ == '__main__':
