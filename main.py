@@ -1743,6 +1743,50 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                         self.create_quick_stats(child) # Re-create stats
                         break
                 break
+    
+    # Customer management methods
+    def add_customer(self):
+        """Add new customer with validation"""
+        try:
+            # Validation
+            if not self.customer_name.get().strip():
+                messagebox.showerror("Error", "Customer name is required")
+                return
+            
+            # Check for duplicate names
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            cursor.execute('SELECT COUNT(*) FROM customers WHERE customer_name = ?', 
+                          (self.customer_name.get().strip(),))
+            if cursor.fetchone()[0] > 0:
+                if not messagebox.askyesno("Duplicate Name", 
+                                         "A customer with this name already exists. Continue anyway?"):
+                    conn.close()
+                    return
+            
+            # Insert customer
+            cursor.execute('''
+                INSERT INTO customers (customer_name, phone, email, address)
+                VALUES (?, ?, ?, ?)
+            ''', (
+                self.customer_name.get().strip(),
+                self.customer_phone.get().strip() or None,
+                self.customer_email.get().strip() or None,
+                self.customer_address.get().strip() or None
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            messagebox.showinfo("Success", "Customer added successfully!")
+            
+            # Refresh displays
+            self.load_customers()
+            self.load_customers_tree()
+            self.clear_customer_form()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to add customer: {str(e)}")
 
 
 if __name__ == '__main__':
