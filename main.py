@@ -1830,6 +1830,26 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to update customer: {str(e)}")
+    
+    def load_customers_tree(self):
+        """Load customers into tree view"""
+        try:
+            for item in self.customer_tree.get_children():
+                self.customer_tree.delete(item)
+            
+            customers = self.db_manager.get_all_customers()
+            for customer in customers:
+                self.customer_tree.insert('', 'end', values=(
+                    customer[0],  # customer_id
+                    customer[1],  # customer_name
+                    customer[2] or '',  # phone
+                    customer[3] or '',  # email
+                    customer[4] or '',  # address
+                    customer[5] or ''   # created_date
+                ))
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load customers: {str(e)}")
 
 
 if __name__ == '__main__':
