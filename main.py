@@ -1331,10 +1331,188 @@ Phone: (555) 123-4567
                 
         except Exception as e:
             messagebox.showerror("Error", f"Search failed: {str(e)}")
+            
+    def sort_treeview(self, column):
+        """Sort treeview by column"""
+        try:
+            data = [(self.history_tree.set(child, column), child) for child in self.history_tree.get_children('')]
+            
+            # Sort data
+            data.sort(reverse=False)
+            
+            # Rearrange items
+            for index, (val, child) in enumerate(data):
+                self.history_tree.move(child, '', index)
+            messagebox.showerror("Error", f"Search failed: {str(e)}")
+
     
+    def export_to_pdf(self):
+        """Enhanced PDF export"""
+        try:
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Export Rental History"
+            )
+            
+            if not filename:
+                return
+            
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter, A4
+            
+            c = canvas.Canvas(filename, pagesize=A4)
+            width, height = A4
+            
+            # Title
+            c.setFont("Helvetica-Bold", 20)
+            c.drawString(50, height - 50, "Rental History Report")
+            
+            c.setFont("Helvetica", 12)
+            c.drawString(50, height - 80, f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            
+            # Headers
+            c.setFont("Helvetica-Bold", 10)
+            y_pos = height - 120
+            headers = ["Receipt Ref", "Customer", "Product", "Days", "Total", "Date"]
+            x_positions = [50, 150, 250, 350, 420, 480]
+            
+            for i, header in enumerate(headers):
+                c.drawString(x_positions[i], y_pos, header)
+            
+            # Draw line under headers
+            c.line(50, y_pos - 5, 550, y_pos - 5)
+            
+            # Data
+            c.setFont("Helvetica", 9)
+            y_pos -= 20
+            
+            # Get data from treeview
+            for child in self.history_tree.get_children():
+                if y_pos < 50:  # New page
+                    c.showPage()
+                    y_pos = height - 50
+                
+                values = self.history_tree.item(child)['values']
+                for i, value in enumerate(values[1:]):  # Skip ID
+                    if i < len(x_positions):
+                        c.drawString(x_positions[i], y_pos, str(value)[:20])  # Truncate long text
+                
+                y_pos -= 15
+            
+            # Summary
+            if y_pos < 100:
+                c.showPage()
+                y_pos = height - 50
+            
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(50, y_pos - 30, f"Total Records: {len(self.history_tree.get_children())}")
+            
+            c.save()
+            messagebox.showinfo("Success", f"Report exported successfully to {filename}")
+            
+        except ImportError:
+            messagebox.showerror("Error", "ReportLab library not installed. Please install it to export PDF.")
+        except Exception as e:
+            messagebox.showerror("Error", f"PDF export failed: {str(e)}")
     
-    
-    
+    # Analytics methods
+    def show_product_distribution(self):
+        """Show enhanced product distribution chart"""
+        try:
+            self.fig.clear()
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT product_type, COUNT(*) as count, SUM(total) as revenue
+                FROM rentals 
+                WHERE product_type IS NOT NULL
+                GROUP BY product_type
+                ORDER BY count DESC
+            ''')
+            
+            data = cursor.fetchall()
+            conn.close()
+            
+            if not data:
+                ax = self.fig.add_subplot(111)
+                ax.text(0.5, 0.5, 'No rental data available', 
+                       transform=ax.transAxes, ha='center', va='center',
+                       fontsize=16, color='gray')
+                ax.set_title('Product Distribution')
+                self.canvas.draw()
+                return
+            
+            products = [row[0] for row in data]
+            counts = [row[1] for row in data]
+            revenues = [row[2] or 0 for row in data]
+            
+            # Create subplots
+            gs = self.fig.add_gridspec(2, 2, hspace=0.3, wspace=0.3)
+            
+            # Pie chart for count distribution
+            ax1 = self.fig.add_subplot(gs[0, 0])
+            colors = ['#3498db', '#e74c3c', '#27ae60', '#f39c12', '#9b59b6']
+            wedges, texts, autotexts = ax1.pie(counts, labels=products, autopct='%1.1f%%', 
+                                              colors=colors[:len(products)], startangle=90)
+            ax1.set_title('Rental Count Distribution', fontweight='bold')
+            
+            # Bar chart for revenue
+            ax2 = self.fig.add_subplot(gs[0, 1])
+            bars = ax2.bar(products, revenues, color=colors[:len(products)])
+            ax2.set_title('Revenue by Product Type', fontweight='bold')
+            ax2.set_ylabel('Revenue (£)')
+            ax2.tick_params(axis='x', rotation=45)
+            
+            # Add value labels on bars
+            for bar in bars:
+                height = bar.get_height()
+                ax2.text(bar.get_x() + bar.get_width()/2., height + max(revenues)*0.01,
+                        f'£{height:.0f}', ha='center', va='bottom', fontsize=9)
+            
+            # Trend chart (last 30 days)
+            ax3 = self.fig.add_subplot(gs[1, :])
+            conn = sqlite3.connect(self.db_manager.db_name) # Corrected: removed 'cursor ='
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT DATE(created_date) as date, COUNT(*) as count, SUM(total) as revenue
+                FROM rentals 
+                WHERE created_date >= date('now', '-30 days')
+                GROUP BY DATE(created_date)
+                ORDER BY date
+            ''')
+            trend_data = cursor.fetchall()
+            conn.close()
+            
+            if trend_data:
+                dates = [datetime.datetime.strptime(row[0], '%Y-%m-%d').strftime('%m-%d') for row in trend_data]
+                daily_counts = [row[1] for row in trend_data]
+                daily_revenue = [row[2] or 0 for row in trend_data]
+                
+                ax3_twin = ax3.twinx()
+                
+                line1 = ax3.plot(dates, daily_counts, marker='o', color='#3498db', linewidth=2, label='Rentals')
+                line2 = ax3_twin.plot(dates, daily_revenue, marker='s', color='#e74c3c', linewidth=2, label='Revenue')
+                
+                ax3.set_xlabel('Date (Last 30 Days)')
+                ax3.set_ylabel('Number of Rentals', color='#3498db')
+                ax3_twin.set_ylabel('Revenue (£)', color='#e74c3c')
+                
+                # Combine legends
+                lines = line1 + line2
+                labels = [l.get_label() for l in lines]
+                ax3.legend(lines, labels, loc='upper left')
+                
+                ax3.set_title('Daily Rental Trends (Last 30 Days)', fontweight='bold')
+                ax3.tick_params(axis='x', rotation=45)
+            
+            self.fig.suptitle('Rental Analytics Dashboard', fontsize=16, fontweight='bold')
+            self.canvas.draw()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate analytics: {str(e)}")
         
         
 
