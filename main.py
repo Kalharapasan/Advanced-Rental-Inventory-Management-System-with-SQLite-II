@@ -938,6 +938,11 @@ class ImprovedRentalInventory:
         else:
             self.customer_details_label.config(text="No customer selected")
     
+    def show_add_customer_dialog(self):
+        """Show add customer dialog"""
+        self.notebook.select(self.customer_tab)
+        self.customer_name.focus()
+    
 
 
 if __name__ == '__main__':
