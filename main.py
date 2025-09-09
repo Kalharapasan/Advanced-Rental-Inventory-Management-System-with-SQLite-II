@@ -926,6 +926,18 @@ class ImprovedRentalInventory:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load customers: {str(e)}")
+    
+    def customer_selected(self, event):
+        """Handle customer selection"""
+        selected = self.customer_combo.get()
+        if selected in self.customer_dict:
+            customer = self.customer_dict[selected]
+            self.customer_details_label.config(
+                text=f"Selected: {customer['name']} | Phone: {customer['phone']} | Email: {customer['email']}"
+            )
+        else:
+            self.customer_details_label.config(text="No customer selected")
+    
 
 
 if __name__ == '__main__':
