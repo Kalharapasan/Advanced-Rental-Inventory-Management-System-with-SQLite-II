@@ -1716,6 +1716,20 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate customer statistics: {str(e)}")
+    
+    def refresh_charts(self):
+        """Refresh all charts and statistics"""
+        try:
+            # Refresh quick stats in header
+            self.refresh_quick_stats()
+            
+            # Show default chart
+            self.show_product_distribution()
+            
+            messagebox.showinfo("Refreshed", "Charts and statistics have been refreshed!")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to refresh charts: {str(e)}")
 
 
 if __name__ == '__main__':
