@@ -1028,6 +1028,52 @@ class ImprovedRentalInventory:
                 
         except (ValueError, AttributeError):
             pass
+    
+    def calculate_total(self):
+        """Enhanced total calculation with better validation"""
+        try:
+            # Validation
+            if not self.LastCreditReview.get() or not self.CostPDay.get():
+                messagebox.showerror("Error", "Please select both product type and rental period")
+                return
+            
+            if self.customer_combo.get() == "Select Customer":
+                messagebox.showerror("Error", "Please select a customer")
+                return
+            
+            # Get values
+            days = int(self.LastCreditReview.get())
+            rate = float(self.CostPDay.get().replace('£', ''))
+            
+            # Calculate base price
+            base_price = days * rate
+            
+            # Apply discount
+            discount_str = self.Discount.get().replace('%', '')
+            discount_rate = 0
+            if discount_str and discount_str != 'Select' and discount_str.isdigit():
+                discount_rate = float(discount_str) / 100
+            
+            discounted_price = base_price * (1 - discount_rate)
+            
+            # Calculate tax and total
+            tax_amount = discounted_price * 0.15
+            total_amount = discounted_price + tax_amount
+            
+            # Set values
+            self.SubTotal.set(f"£{discounted_price:.2f}")
+            self.Tax.set(f"£{tax_amount:.2f}")
+            self.Total.set(f"£{total_amount:.2f}")
+            
+            # Generate receipt
+            self.generate_receipt(discounted_price, tax_amount, total_amount)
+            
+            messagebox.showinfo("Success", "Total calculated successfully!")
+            
+        except ValueError as e:
+            messagebox.showerror("Error", "Please enter valid numeric values")
+        except Exception as e:
+            messagebox.showerror("Error", f"Calculation failed: {str(e)}")
 
 
 if __name__ == '__main__':
