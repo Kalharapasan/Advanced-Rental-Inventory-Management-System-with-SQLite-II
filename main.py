@@ -1906,6 +1906,40 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             self.load_products_tree()
             self.load_product_types_for_rental() # Refresh rental product types
             self.clear_product_form()
+    
+    def update_product_in_db(self):
+        """Update an existing product using form data."""
+        selection = self.product_tree.selection()
+        if not selection:
+            messagebox.showwarning("Warning", "Please select a product to update.")
+            return
+        
+        product_id = self.product_tree.item(selection[0])['values'][0]
+        product_type = self.product_type_var.get().strip()
+        product_code = self.product_code_var.get().strip()
+        cost_per_day_str = self.cost_per_day_var.get().strip()
+        available_quantity_str = self.available_quantity_var.get().strip()
+        status = self.product_status_var.get().strip()
+
+        if not product_type or not product_code or not cost_per_day_str or not available_quantity_str or not status:
+            messagebox.showerror("Error", "All product fields are required for update.")
+            return
+
+        try:
+            cost_per_day = float(cost_per_day_str)
+            available_quantity = int(available_quantity_str)
+            if cost_per_day <= 0 or available_quantity < 0:
+                messagebox.showerror("Error", "Cost per day must be positive and quantity non-negative.")
+                return
+        except ValueError:
+            messagebox.showerror("Error", "Cost per day and quantity must be valid numbers.")
+            return
+
+        if self.db_manager.update_product(product_id, product_type, product_code, cost_per_day, available_quantity, status):
+            messagebox.showinfo("Success", "Product updated successfully!")
+            self.load_products_tree()
+            self.load_product_types_for_rental() # Refresh rental product types
+            self.clear_product_form()
 
 
 if __name__ == '__main__':
