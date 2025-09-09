@@ -470,3 +470,32 @@ class ImprovedRentalInventory:
         def _on_mousewheel(event):
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
+    
+    def create_customer_selection_section(self, parent):
+        """Create customer selection section"""
+        customer_frame = ttk.LabelFrame(parent, text="Customer Information", padding=15)
+        customer_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        
+        # Configure internal grid
+        customer_frame.grid_columnconfigure(1, weight=1)
+        customer_frame.grid_columnconfigure(3, weight=1)
+        
+        # Customer selection
+        Label(customer_frame, text="Select Customer:", font=('Segoe UI', 11, 'bold')).grid(row=0, column=0, sticky="w", padx=(0, 10))
+        
+        self.customer_combo = ttk.Combobox(customer_frame, textvariable=self.customer_id, 
+                                         font=('Segoe UI', 10), state='readonly', width=30)
+        self.customer_combo.grid(row=0, column=1, sticky="ew", padx=(0, 20))
+        self.customer_combo.bind("<<ComboboxSelected>>", self.customer_selected)
+        
+        # Add customer button
+        Button(customer_frame, text="Add New Customer", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'],
+               command=self.show_add_customer_dialog).grid(row=0, column=2, padx=10)
+        
+        # Customer details display
+        self.customer_details_label = Label(customer_frame, text="No customer selected", 
+                                          font=('Segoe UI', 10), fg=self.colors['secondary'])
+        self.customer_details_label.grid(row=1, column=0, columnspan=3, sticky="w", pady=(10, 0))
+        
+        self.load_customers()
