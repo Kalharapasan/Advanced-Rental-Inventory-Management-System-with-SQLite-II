@@ -138,3 +138,32 @@ class DatabaseManager:
         results = cursor.fetchall()
         conn.close()
         return results
+    
+    def get_all_customers(self):
+        """Get all customers"""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM customers ORDER BY customer_name')
+        results = cursor.fetchall()
+        conn.close()
+    
+    # New methods for product management
+    def add_product(self, product_type, product_code, cost_per_day, available_quantity):
+        """Add a new product to the database."""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                INSERT INTO products (product_type, product_code, cost_per_day, available_quantity)
+                VALUES (?, ?, ?, ?)
+            ''', (product_type, product_code, cost_per_day, available_quantity))
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "Product code already exists.")
+            return False
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to add product: {str(e)}")
+            return False
+        finally:
+            conn.close()
