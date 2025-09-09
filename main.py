@@ -1787,6 +1787,49 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to add customer: {str(e)}")
+    
+    def update_customer(self):
+        """Update existing customer"""
+        try:
+            selection = self.customer_tree.selection()
+            if not selection:
+                messagebox.showwarning("Warning", "Please select a customer to update")
+                return
+            
+            # Get customer ID from selection
+            item = self.customer_tree.item(selection[0])
+            customer_id = item['values'][0]
+            
+            if not self.customer_name.get().strip():
+                messagebox.showerror("Error", "Customer name is required")
+                return
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE customers 
+                SET customer_name = ?, phone = ?, email = ?, address = ?
+                WHERE customer_id = ?
+            ''', (
+                self.customer_name.get().strip(),
+                self.customer_phone.get().strip() or None,
+                self.customer_email.get().strip() or None,
+                self.customer_address.get().strip() or None,
+                customer_id
+            ))
+            
+            conn.commit()
+            conn.close()
+            
+            messagebox.showinfo("Success", "Customer updated successfully!")
+            
+            # Refresh displays
+            self.load_customers()
+            self.load_customers_tree()
+            self.clear_customer_form()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update customer: {str(e)}")
 
 
 if __name__ == '__main__':
