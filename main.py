@@ -981,6 +981,37 @@ class ImprovedRentalInventory:
             self.CostPDay.set("")
             messagebox.showwarning("No Product", f"No available product found for type: {product_type}")
     
+    def days_selected(self, event):
+        """Handle rental period selection"""
+        period = self.cboNoDays.get()
+        
+        period_configs = {
+            "1-30 days": {"days": 30, "limit": "£150", "discount": "5%"},
+            "31-90 days": {"days": 90, "limit": "£200", "discount": "10%"},
+            "91-270 days": {"days": 270, "limit": "£250", "discount": "15%"},
+            "271-365 days": {"days": 365, "limit": "£300", "discount": "20%"}
+        }
+        
+        if period in period_configs:
+            config = period_configs[period]
+            
+            # Set dates
+            today = datetime.date.today()
+            end_date = today + datetime.timedelta(days=config["days"])
+            
+            self.AppDate.set(str(today))
+            self.NextCreditReview.set(str(end_date))
+            self.LastCreditReview.set(str(config["days"]))
+            self.DateRev.set(str(end_date))
+            
+            # Set credit and discount
+            self.CreLimit.set(config["limit"])
+            self.Discount.set(config["discount"])
+            self.AcctOpen.set("Yes")
+            
+            # Auto-calculate total if product is selected
+            self.auto_calculate_dates()
+    
 
 
 if __name__ == '__main__':
