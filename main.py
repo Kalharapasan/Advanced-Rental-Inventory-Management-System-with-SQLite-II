@@ -1195,6 +1195,44 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save rental: {str(e)}")
+            
+    def reset_form(self):
+        """Enhanced form reset"""
+        # Clear all variables
+        variables_to_clear = [
+            self.AcctOpen, self.AppDate, self.NextCreditReview, self.LastCreditReview,
+            self.DateRev, self.ProdCode, self.ProdType, self.NoDays, self.CostPDay,
+            self.CreLimit, self.CreCheck, self.SettDueDay, self.PaymentD, self.Discount,
+            self.Deposit, self.PayDueDay, self.PaymentM, self.Tax, self.SubTotal,
+            self.Total, self.Receipt_Ref
+        ]
+        
+        for var in variables_to_clear:
+            var.set("")
+        
+        # Reset checkboxes
+        self.var1.set(0)
+        self.var2.set(0)
+        self.var3.set(0)
+        self.var4.set(0)
+        
+        # Reset comboboxes
+        self.customer_combo.current(0)
+        self.cboProdType.current(0)
+        self.cboNoDays.current(0)
+        self.cboCreLimit.current(0)
+        self.cboDiscount.current(0)
+        self.cboPaymentM.current(0)
+        
+        # Clear receipt
+        self.txtReceipt.delete("1.0", END)
+        
+        # Reset customer details
+        self.customer_details_label.config(text="No customer selected")
+        
+        messagebox.showinfo("Reset", "Form has been reset successfully!")
+        
+        
 
 
 if __name__ == '__main__':
