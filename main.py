@@ -1587,6 +1587,135 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate monthly report: {str(e)}")
+    
+    def show_customer_stats(self):
+        """Show comprehensive customer statistics"""
+        try:
+            self.fig.clear()
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            # Get various statistics
+            cursor.execute('SELECT COUNT(*) FROM rentals')
+            total_rentals = cursor.fetchone()[0]
+            
+            cursor.execute('SELECT SUM(total) FROM rentals')
+            total_revenue = cursor.fetchone()[0] or 0
+            
+            cursor.execute('SELECT AVG(total) FROM rentals')
+            avg_rental = cursor.fetchone()[0] or 0
+            
+            cursor.execute('SELECT COUNT(DISTINCT customer_id) FROM rentals')
+            unique_customers = cursor.fetchone()[0]
+            
+            # Payment method distribution
+            cursor.execute('''
+                SELECT payment_method, COUNT(*) as count
+                FROM rentals 
+                WHERE payment_method IS NOT NULL AND payment_method != 'Select'
+                GROUP BY payment_method
+                ORDER BY count DESC
+            ''')
+            payment_data = cursor.fetchall()
+            
+            # Top customers
+            cursor.execute('''
+                SELECT c.customer_name, COUNT(r.rental_id) as rental_count, SUM(r.total) as total_spent
+                FROM rentals r
+                JOIN customers c ON r.customer_id = c.customer_id
+                GROUP BY c.customer_id
+                ORDER BY total_spent DESC
+                LIMIT 5
+            ''')
+            top_customers = cursor.fetchall()
+            
+            conn.close()
+            
+            # Create layout
+            gs = self.fig.add_gridspec(2, 3, hspace=0.4, wspace=0.4)
+            
+            # Summary statistics (text)
+            ax1 = self.fig.add_subplot(gs[0, 0])
+            ax1.axis('off')
+            
+            stats_text = f"""BUSINESS SUMMARY
+            
+Total Rentals: {total_rentals:,}
+Total Revenue: £{total_revenue:,.2f}
+Average Rental: £{avg_rental:.2f}
+Unique Customers: {unique_customers:,}
+
+Revenue per Customer: £{total_revenue/unique_customers if unique_customers > 0 else 0:.2f}
+Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 else 0:.1f}"""
+            
+            ax1.text(0.05, 0.95, stats_text, transform=ax1.transAxes, 
+                    fontsize=10, verticalalignment='top', fontfamily='monospace',
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor='lightblue', alpha=0.8))
+            
+            # Payment method pie chart
+            if payment_data:
+                ax2 = self.fig.add_subplot(gs[0, 1])
+                methods = [row[0] for row in payment_data]
+                counts = [row[1] for row in payment_data]
+                
+                ax2.pie(counts, labels=methods, autopct='%1.1f%%', startangle=90)
+                ax2.set_title('Payment Methods', fontweight='bold')
+            
+            # Top customers bar chart
+            if top_customers:
+                ax3 = self.fig.add_subplot(gs[0, 2])
+                names = [row[0][:10] + '...' if len(row[0]) > 10 else row[0] for row in top_customers]
+                spending = [row[2] for row in top_customers]
+                
+                bars = ax3.barh(names, spending, color='#e74c3c')
+                ax3.set_title('Top 5 Customers by Revenue', fontweight='bold')
+                ax3.set_xlabel('Total Spent (£)')
+                
+                # Add value labels
+                for i, bar in enumerate(bars):
+                    width = bar.get_width()
+                    ax3.text(width + max(spending)*0.01, bar.get_y() + bar.get_height()/2,
+                            f'£{width:.0f}', ha='left', va='center', fontsize=9)
+            
+            # Rental frequency distribution
+            conn = sqlite3.connect(self.db_manager.db_name) # Corrected: removed 'cursor ='
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT customer_rental_count, COUNT(*) as frequency
+                FROM (
+                    SELECT customer_id, COUNT(*) as customer_rental_count
+                    FROM rentals
+                    GROUP BY customer_id
+                ) customer_counts
+                GROUP BY customer_rental_count
+                ORDER BY customer_rental_count
+            ''')
+            frequency_data = cursor.fetchall()
+            conn.close()
+            
+            if frequency_data:
+                ax4 = self.fig.add_subplot(gs[1, :])
+                rental_counts = [row[0] for row in frequency_data]
+                frequencies = [row[1] for row in frequency_data]
+                
+                bars = ax4.bar(rental_counts, frequencies, color='#9b59b6', alpha=0.7)
+                ax4.set_title('Customer Rental Frequency Distribution', fontweight='bold')
+                ax4.set_xlabel('Number of Rentals per Customer')
+                ax4.set_ylabel('Number of Customers')
+                ax4.grid(True, alpha=0.3, axis='y')
+                
+                # Add value labels
+                for bar in bars:
+                    height = bar.get_height()
+                    ax4.text(bar.get_x() + bar.get_width()/2., height + 0.1,
+                            f'{int(height)}', ha='center', va='bottom', fontsize=9)
+            
+            self.fig.suptitle('Customer Analytics Dashboard', fontsize=16, fontweight='bold')
+            self.canvas.draw()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate customer statistics: {str(e)}")
 
 
 if __name__ == '__main__':
