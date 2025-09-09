@@ -1978,6 +1978,25 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load products: {str(e)}")
     
+    def on_product_select(self, event):
+        """Handle product selection in the product tree view."""
+        try:
+            selection = self.product_tree.selection()
+            if selection:
+                item = self.product_tree.item(selection[0])
+                values = item['values']
+                
+                # Populate form fields
+                self.product_id_var.set(values[0]) # Store ID for update/delete
+                self.product_type_var.set(values[1])
+                self.product_code_var.set(values[2])
+                self.cost_per_day_var.set(str(values[3]).replace('£', '')) # Remove £ for editing
+                self.available_quantity_var.set(values[4])
+                self.product_status_var.set(values[5])
+                
+        except Exception as e:
+            pass  # Silently handle selection errors
+    
 
 if __name__ == '__main__':
     try:
