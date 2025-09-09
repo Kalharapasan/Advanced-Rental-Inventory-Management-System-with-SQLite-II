@@ -168,4 +168,23 @@ class DatabaseManager:
         finally:
             conn.close()
         
-        
+    def update_product(self, product_id, product_type, product_code, cost_per_day, available_quantity, status):
+        """Update an existing product's details."""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                UPDATE products
+                SET product_type = ?, product_code = ?, cost_per_day = ?, available_quantity = ?, status = ?
+                WHERE product_id = ?
+            ''', (product_type, product_code, cost_per_day, available_quantity, status, product_id))
+            conn.commit()
+            return True
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "Product code already exists for another product.")
+            return False
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update product: {str(e)}")
+            return False
+        finally:
+            conn.close()    
