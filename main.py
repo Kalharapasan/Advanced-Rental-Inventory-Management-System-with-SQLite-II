@@ -401,3 +401,28 @@ class ImprovedRentalInventory:
                   font=('Segoe UI', 12), 
                   bg=self.colors['primary'], 
                   fg=self.colors['white']).pack(anchor=E)
+    
+    def create_responsive_notebook(self):
+        """Create responsive tabbed interface"""
+        self.notebook = ttk.Notebook(self.main_container)
+        self.notebook.pack(fill=BOTH, expand=True, padx=20, pady=(0, 20))
+        
+        # Create tabs
+        self.rental_tab = ttk.Frame(self.notebook)
+        self.history_tab = ttk.Frame(self.notebook)
+        self.analytics_tab = ttk.Frame(self.notebook)
+        self.customer_tab = ttk.Frame(self.notebook)
+        self.product_tab = ttk.Frame(self.notebook) # NEW Product Tab
+        
+        self.notebook.add(self.rental_tab, text="  New Rental  ")
+        self.notebook.add(self.history_tab, text="  Rental History  ")
+        self.notebook.add(self.analytics_tab, text="  Analytics  ")
+        self.notebook.add(self.customer_tab, text="  Customers  ")
+        self.notebook.add(self.product_tab, text="  Products  ") # Add Product Tab
+        
+        # Setup each tab with responsive design
+        self.setup_responsive_rental_tab()
+        self.setup_responsive_history_tab()
+        self.setup_responsive_analytics_tab()
+        self.setup_responsive_customer_tab()
+        self.setup_responsive_product_tab() # Setup Product Tab
