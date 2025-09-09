@@ -1957,6 +1957,27 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 self.load_products_tree()
                 self.load_product_types_for_rental() # Refresh rental product types
                 self.clear_product_form()
+    
+    def load_products_tree(self):
+        """Load products into the product tree view."""
+        try:
+            for item in self.product_tree.get_children():
+                self.product_tree.delete(item)
+            
+            products = self.db_manager.get_all_products()
+            for product in products:
+                self.product_tree.insert('', 'end', values=(
+                    product[0],  # product_id
+                    product[1],  # product_type
+                    product[2],  # product_code
+                    f"£{product[3]:.2f}",  # cost_per_day
+                    product[4],  # available_quantity
+                    product[5]   # status
+                ))
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load products: {str(e)}")
+    
 
 if __name__ == '__main__':
     try:
