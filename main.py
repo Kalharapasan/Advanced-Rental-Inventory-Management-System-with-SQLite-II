@@ -896,3 +896,9 @@ class ImprovedRentalInventory:
         
         # Load products
         self.load_products_tree()
+    
+    def on_window_resize(self, event):
+        """Handle window resize events"""
+        if event.widget == self.root:
+            # Update quick stats when window resizes
+            pass
