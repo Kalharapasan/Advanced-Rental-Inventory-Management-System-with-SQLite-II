@@ -809,3 +809,90 @@ class ImprovedRentalInventory:
         
         # Load customers
         self.load_customers_tree()
+    
+    def setup_responsive_product_tab(self): # NEW Product Tab Setup
+        """Setup responsive product management tab"""
+        product_main = Frame(self.product_tab, bg=self.colors['light'])
+        product_main.pack(fill=BOTH, expand=True, padx=20, pady=20)
+        
+        # Product form
+        form_frame = ttk.LabelFrame(product_main, text="Product Details", padding=15)
+        form_frame.pack(fill=X, pady=(0, 20))
+        
+        # Configure grid
+        form_frame.grid_columnconfigure(1, weight=1)
+        form_frame.grid_columnconfigure(3, weight=1)
+        
+        # Form fields
+        Label(form_frame, text="Product Type:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=0, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.product_type_var, font=('Segoe UI', 10)).grid(row=0, column=1, sticky="ew", padx=(10, 20), pady=5)
+        
+        Label(form_frame, text="Product Code:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=2, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.product_code_var, font=('Segoe UI', 10)).grid(row=0, column=3, sticky="ew", padx=(10, 0), pady=5)
+        
+        Label(form_frame, text="Cost Per Day:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=0, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.cost_per_day_var, font=('Segoe UI', 10)).grid(row=1, column=1, sticky="ew", padx=(10, 20), pady=5)
+        
+        Label(form_frame, text="Available Quantity:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=2, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.available_quantity_var, font=('Segoe UI', 10)).grid(row=1, column=3, sticky="ew", padx=(10, 0), pady=5)
+
+        Label(form_frame, text="Status:", font=('Segoe UI', 10, 'bold')).grid(row=2, column=0, sticky="w", pady=5)
+        ttk.Combobox(form_frame, textvariable=self.product_status_var, values=['Available', 'Unavailable', 'Maintenance'], state='readonly', font=('Segoe UI', 10)).grid(row=2, column=1, sticky="ew", padx=(10, 20), pady=5)
+        
+        # Buttons
+        button_frame = Frame(form_frame)
+        button_frame.grid(row=3, column=0, columnspan=4, pady=15)
+        
+        Button(button_frame, text="Add Product", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'],
+               command=self.add_product_to_db).pack(side=LEFT, padx=(0, 10))
+        
+        Button(button_frame, text="Update Product", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['accent'], fg=self.colors['white'],
+               command=self.update_product_in_db).pack(side=LEFT, padx=(0, 10))
+        
+        Button(button_frame, text="Delete Product", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['danger'], fg=self.colors['white'],
+               command=self.delete_product_from_db).pack(side=LEFT, padx=(0, 10))
+
+        Button(button_frame, text="Clear Form", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['warning'], fg=self.colors['white'],
+               command=self.clear_product_form).pack(side=LEFT)
+        
+        # Product list
+        list_frame = ttk.LabelFrame(product_main, text="Product Inventory", padding=15)
+        list_frame.pack(fill=BOTH, expand=True)
+        
+        # Product treeview
+        prod_tree_frame = Frame(list_frame)
+        prod_tree_frame.pack(fill=BOTH, expand=True)
+        
+        prod_columns = ('ID', 'Type', 'Code', 'Cost/Day', 'Quantity', 'Status')
+        self.product_tree = ttk.Treeview(prod_tree_frame, columns=prod_columns, show='headings', height=15)
+        
+        # Define product tree headings
+        prod_col_widths = {'ID': 60, 'Type': 120, 'Code': 100, 'Cost/Day': 100, 'Quantity': 80, 'Status': 100}
+        
+        for col in prod_columns:
+            self.product_tree.heading(col, text=col)
+            self.product_tree.column(col, width=prod_col_widths.get(col, 100))
+        
+        # Product tree scrollbars
+        prod_v_scroll = ttk.Scrollbar(prod_tree_frame, orient=VERTICAL, command=self.product_tree.yview)
+        prod_h_scroll = ttk.Scrollbar(prod_tree_frame, orient=HORIZONTAL, command=self.product_tree.xview)
+        
+        self.product_tree.configure(yscrollcommand=prod_v_scroll.set, xscrollcommand=prod_h_scroll.set)
+        
+        # Pack product tree
+        self.product_tree.grid(row=0, column=0, sticky="nsew")
+        prod_v_scroll.grid(row=0, column=1, sticky="ns")
+        prod_h_scroll.grid(row=1, column=0, sticky="ew")
+        
+        prod_tree_frame.grid_rowconfigure(0, weight=1)
+        prod_tree_frame.grid_columnconfigure(0, weight=1)
+        
+        # Bind selection event
+        self.product_tree.bind('<<TreeviewSelect>>', self.on_product_select)
+        
+        # Load products
+        self.load_products_tree()
