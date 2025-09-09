@@ -1268,6 +1268,8 @@ Phone: (555) 123-4567
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load rental history: {str(e)}")
     
+    
+    
     def print_receipt(self):
         """Print or save receipt"""
         try:
@@ -1288,6 +1290,47 @@ Phone: (555) 123-4567
                 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save receipt: {str(e)}")
+    
+    def search_rentals(self):
+        """Enhanced search functionality"""
+        search_term = self.search_var.get().strip()
+        
+        try:
+            for item in self.history_tree.get_children():
+                self.history_tree.delete(item)
+            
+            if not search_term:
+                self.load_all_rentals()
+                return
+            
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT r.rental_id, r.receipt_ref, c.customer_name, r.product_type,
+                       r.no_days, r.total, r.created_date
+                FROM rentals r
+                LEFT JOIN customers c ON r.customer_id = c.customer_id
+                WHERE r.receipt_ref LIKE ? OR r.product_type LIKE ? OR c.customer_name LIKE ?
+                ORDER BY r.created_date DESC
+            ''', (f'%{search_term}%', f'%{search_term}%', f'%{search_term}%'))
+            
+            rentals = cursor.fetchall()
+            conn.close()
+            
+            for rental in rentals:
+                self.history_tree.insert('', 'end', values=(
+                    rental[0],  # rental_id
+                    rental[1],  # receipt_ref
+                    rental[2] or 'Unknown',  # customer_name
+                    rental[3],  # product_type
+                    rental[4],  # no_days
+                    f"£{rental[5]:.2f}" if rental[5] else "£0.00",  # total
+                    rental[6][:16] if rental[6] else ""  # created_date
+                ))
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Search failed: {str(e)}")
     
     
         
