@@ -188,3 +188,17 @@ class DatabaseManager:
             return False
         finally:
             conn.close()    
+    
+    def delete_product(self, product_id):
+        """Delete a product from the database."""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('DELETE FROM products WHERE product_id = ?', (product_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to delete product: {str(e)}")
+            return False
+        finally:
+            conn.close()
