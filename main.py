@@ -371,3 +371,33 @@ class ImprovedRentalInventory:
         
         self.create_quick_stats(stats_frame)
     
+    def create_quick_stats(self, parent):
+        """Create quick statistics display"""
+        try:
+            conn = sqlite3.connect(self.db_manager.db_name)
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT COUNT(*) FROM rentals')
+            total_rentals = cursor.fetchone()[0]
+            
+            cursor.execute('SELECT SUM(total) FROM rentals')
+            total_revenue = cursor.fetchone()[0] or 0
+            
+            conn.close()
+            
+            # Stats labels
+            Label(parent, text=f"Total Rentals: {total_rentals}", 
+                  font=('Segoe UI', 12, 'bold'), 
+                  bg=self.colors['primary'], 
+                  fg=self.colors['white']).pack(anchor=E)
+            
+            Label(parent, text=f"Total Revenue: £{total_revenue:.2f}", 
+                  font=('Segoe UI', 12, 'bold'), 
+                  bg=self.colors['primary'], 
+                  fg=self.colors['white']).pack(anchor=E)
+        
+        except Exception as e:
+            Label(parent, text="Stats unavailable", 
+                  font=('Segoe UI', 12), 
+                  bg=self.colors['primary'], 
+                  fg=self.colors['white']).pack(anchor=E)
