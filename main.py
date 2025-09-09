@@ -954,6 +954,33 @@ class ImprovedRentalInventory:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load product types: {str(e)}")
     
+    def product_selected(self, event):
+        """Handle product type selection with improved logic"""
+        product_type = self.cboProdType.get()
+        
+        # Fetch product details from DB based on selected type
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute('SELECT product_code, cost_per_day FROM products WHERE product_type = ? AND available_quantity > 0 AND status = "Available" LIMIT 1', (product_type,))
+        product_info = cursor.fetchone()
+        conn.close()
+
+        if product_info:
+            self.ProdCode.set(product_info[0])
+            self.CostPDay.set(f"£{product_info[1]:.2f}")
+            
+            # Set reasonable defaults
+            self.CreCheck.set("No")
+            self.PaymentD.set("No")
+            self.Deposit.set("No")
+            
+            # Auto-calculate if days are selected
+            self.auto_calculate_dates()
+        else:
+            self.ProdCode.set("")
+            self.CostPDay.set("")
+            messagebox.showwarning("No Product", f"No available product found for type: {product_type}")
+    
 
 
 if __name__ == '__main__':
