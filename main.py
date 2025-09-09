@@ -729,3 +729,83 @@ class ImprovedRentalInventory:
         
         # Initialize with default chart
         self.show_product_distribution()
+    
+    def setup_responsive_customer_tab(self):
+        """Setup responsive customer management tab"""
+        customer_main = Frame(self.customer_tab, bg=self.colors['light'])
+        customer_main.pack(fill=BOTH, expand=True, padx=20, pady=20)
+        
+        # Customer form
+        form_frame = ttk.LabelFrame(customer_main, text="Customer Management", padding=15)
+        form_frame.pack(fill=X, pady=(0, 20))
+        
+        # Configure grid
+        form_frame.grid_columnconfigure(1, weight=1)
+        form_frame.grid_columnconfigure(3, weight=1)
+        
+        # Form fields
+        Label(form_frame, text="Full Name:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=0, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.customer_name, font=('Segoe UI', 10)).grid(row=0, column=1, sticky="ew", padx=(10, 20), pady=5)
+        
+        Label(form_frame, text="Phone:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=2, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.customer_phone, font=('Segoe UI', 10)).grid(row=0, column=3, sticky="ew", padx=(10, 0), pady=5)
+        
+        Label(form_frame, text="Email:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=0, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.customer_email, font=('Segoe UI', 10)).grid(row=1, column=1, sticky="ew", padx=(10, 20), pady=5)
+        
+        Label(form_frame, text="Address:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=2, sticky="w", pady=5)
+        Entry(form_frame, textvariable=self.customer_address, font=('Segoe UI', 10)).grid(row=1, column=3, sticky="ew", padx=(10, 0), pady=5)
+        
+        # Buttons
+        button_frame = Frame(form_frame)
+        button_frame.grid(row=2, column=0, columnspan=4, pady=15)
+        
+        Button(button_frame, text="Add Customer", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'],
+               command=self.add_customer).pack(side=LEFT, padx=(0, 10))
+        
+        Button(button_frame, text="Update Customer", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['accent'], fg=self.colors['white'],
+               command=self.update_customer).pack(side=LEFT, padx=(0, 10))
+        
+        Button(button_frame, text="Clear Form", font=('Segoe UI', 11, 'bold'),
+               bg=self.colors['warning'], fg=self.colors['white'],
+               command=self.clear_customer_form).pack(side=LEFT)
+        
+        # Customer list
+        list_frame = ttk.LabelFrame(customer_main, text="Customer Directory", padding=15)
+        list_frame.pack(fill=BOTH, expand=True)
+        
+        # Customer treeview
+        cust_tree_frame = Frame(list_frame)
+        cust_tree_frame.pack(fill=BOTH, expand=True)
+        
+        cust_columns = ('ID', 'Name', 'Phone', 'Email', 'Address', 'Created')
+        self.customer_tree = ttk.Treeview(cust_tree_frame, columns=cust_columns, show='headings', height=15)
+        
+        # Define customer tree headings
+        cust_col_widths = {'ID': 60, 'Name': 150, 'Phone': 120, 'Email': 180, 'Address': 200, 'Created': 100}
+        
+        for col in cust_columns:
+            self.customer_tree.heading(col, text=col)
+            self.customer_tree.column(col, width=cust_col_widths.get(col, 100))
+        
+        # Customer tree scrollbars
+        cust_v_scroll = ttk.Scrollbar(cust_tree_frame, orient=VERTICAL, command=self.customer_tree.yview)
+        cust_h_scroll = ttk.Scrollbar(cust_tree_frame, orient=HORIZONTAL, command=self.customer_tree.xview)
+        
+        self.customer_tree.configure(yscrollcommand=cust_v_scroll.set, xscrollcommand=cust_h_scroll.set)
+        
+        # Pack customer tree
+        self.customer_tree.grid(row=0, column=0, sticky="nsew")
+        cust_v_scroll.grid(row=0, column=1, sticky="ns")
+        cust_h_scroll.grid(row=1, column=0, sticky="ew")
+        
+        cust_tree_frame.grid_rowconfigure(0, weight=1)
+        cust_tree_frame.grid_columnconfigure(0, weight=1)
+        
+        # Bind selection event
+        self.customer_tree.bind('<<TreeviewSelect>>', self.on_customer_select)
+        
+        # Load customers
+        self.load_customers_tree()
