@@ -1941,6 +1941,22 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             self.load_product_types_for_rental() # Refresh rental product types
             self.clear_product_form()
 
+    def delete_product_from_db(self):
+        """Delete a selected product."""
+        selection = self.product_tree.selection()
+        if not selection:
+            messagebox.showwarning("Warning", "Please select a product to delete.")
+            return
+        
+        product_id = self.product_tree.item(selection[0])['values'][0]
+        product_code = self.product_tree.item(selection[0])['values'][2]
+
+        if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete product '{product_code}'?"):
+            if self.db_manager.delete_product(product_id):
+                messagebox.showinfo("Success", "Product deleted successfully!")
+                self.load_products_tree()
+                self.load_product_types_for_rental() # Refresh rental product types
+                self.clear_product_form()
 
 if __name__ == '__main__':
     try:
