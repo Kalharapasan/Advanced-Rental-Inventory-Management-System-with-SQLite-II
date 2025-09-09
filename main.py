@@ -1878,6 +1878,34 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
         # Clear tree selection
         for item in self.customer_tree.selection():
             self.customer_tree.selection_remove(item)
+    
+    # Product management methods (NEW)
+    def add_product_to_db(self):
+        """Add a new product using form data."""
+        product_type = self.product_type_var.get().strip()
+        product_code = self.product_code_var.get().strip()
+        cost_per_day_str = self.cost_per_day_var.get().strip()
+        available_quantity_str = self.available_quantity_var.get().strip()
+
+        if not product_type or not product_code or not cost_per_day_str or not available_quantity_str:
+            messagebox.showerror("Error", "All product fields are required.")
+            return
+
+        try:
+            cost_per_day = float(cost_per_day_str)
+            available_quantity = int(available_quantity_str)
+            if cost_per_day <= 0 or available_quantity < 0:
+                messagebox.showerror("Error", "Cost per day must be positive and quantity non-negative.")
+                return
+        except ValueError:
+            messagebox.showerror("Error", "Cost per day and quantity must be valid numbers.")
+            return
+
+        if self.db_manager.add_product(product_type, product_code, cost_per_day, available_quantity):
+            messagebox.showinfo("Success", "Product added successfully!")
+            self.load_products_tree()
+            self.load_product_types_for_rental() # Refresh rental product types
+            self.clear_product_form()
 
 
 if __name__ == '__main__':
