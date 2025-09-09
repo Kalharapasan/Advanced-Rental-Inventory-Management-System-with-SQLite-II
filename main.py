@@ -1850,6 +1850,23 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load customers: {str(e)}")
+    
+    def on_customer_select(self, event):
+        """Handle customer selection in tree"""
+        try:
+            selection = self.customer_tree.selection()
+            if selection:
+                item = self.customer_tree.item(selection[0])
+                values = item['values']
+                
+                # Populate form fields
+                self.customer_name.set(values[1])
+                self.customer_phone.set(values[2])
+                self.customer_email.set(values[3])
+                self.customer_address.set(values[4])
+                
+        except Exception as e:
+            pass  # Silently handle selection errors
 
 
 if __name__ == '__main__':
