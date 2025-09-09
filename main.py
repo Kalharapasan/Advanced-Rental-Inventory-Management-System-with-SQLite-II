@@ -338,3 +338,15 @@ class ImprovedRentalInventory:
         
         # Search variable
         self.search_var = StringVar()
+    
+    def create_responsive_interface(self):
+        """Create responsive main interface"""
+        # Main container with scrollable frame
+        self.main_container = Frame(self.root, bg=self.colors['primary'])
+        self.main_container.pack(fill=BOTH, expand=True)
+        
+        # Header
+        self.create_header()
+        
+        # Notebook for tabs
+        self.create_responsive_notebook()
