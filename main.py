@@ -235,3 +235,56 @@ class
         
         # Bind resize events
         self.root.bind('<Configure>', self.on_window_resize)
+        
+    def configure_responsive_styles(self):
+        """Configure modern responsive UI styles"""
+        self.style = ttk.Style()
+        self.style.theme_use('clam')
+        
+        # Define color scheme
+        self.colors = {
+            'primary': '#2c3e50',
+            'secondary': '#34495e',
+            'accent': '#3498db',
+            'success': '#27ae60',
+            'warning': '#f39c12',
+            'danger': '#e74c3c',
+            'light': '#ecf0f1',
+            'white': '#ffffff'
+        }
+        
+        # Configure custom styles
+        self.style.configure('Title.TLabel', 
+                           font=('Segoe UI', 18, 'bold'), 
+                           background=self.colors['primary'], 
+                           foreground=self.colors['white'])
+        
+        self.style.configure('Heading.TLabel', 
+                           font=('Segoe UI', 12, 'bold'), 
+                           background=self.colors['secondary'], 
+                           foreground=self.colors['white'])
+        
+        self.style.configure('Modern.TFrame', 
+                           background=self.colors['secondary'], 
+                           relief='flat', 
+                           borderwidth=1)
+        
+        self.style.configure('Card.TFrame', 
+                           background=self.colors['light'], 
+                           relief='raised', 
+                           borderwidth=2)
+        
+        # Configure notebook style
+        self.style.configure('TNotebook', 
+                           background=self.colors['primary'],
+                           borderwidth=0)
+        
+        self.style.configure('TNotebook.Tab', 
+                           background=self.colors['secondary'],
+                           foreground=self.colors['white'],
+                           padding=[20, 10],
+                           font=('Segoe UI', 10, 'bold'))
+        
+        self.style.map('TNotebook.Tab',
+                      background=[('selected', self.colors['accent']),
+                                ('active', self.colors['warning'])])
