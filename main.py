@@ -499,3 +499,83 @@ class ImprovedRentalInventory:
         self.customer_details_label.grid(row=1, column=0, columnspan=3, sticky="w", pady=(10, 0))
         
         self.load_customers()
+    
+    def create_product_section(self, parent):
+        """Create responsive product section"""
+        product_frame = ttk.LabelFrame(parent, text="Product & Rental Details", padding=15)
+        product_frame.grid(row=1, column=0, sticky="nsew", padx=(0, 10), pady=(0, 10))
+        
+        # Configure grid
+        for i in range(6):
+            product_frame.grid_rowconfigure(i, weight=0)
+        for i in range(4):
+            product_frame.grid_columnconfigure(i, weight=1)
+        
+        # Product Type
+        Label(product_frame, text="Product Type:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=0, sticky="w", pady=5)
+        self.cboProdType = ttk.Combobox(product_frame, textvariable=self.ProdType, state='readonly', 
+                                       font=('Segoe UI', 10))
+        self.cboProdType.grid(row=0, column=1, sticky="ew", padx=5, pady=5)
+        self.cboProdType.bind("<<ComboboxSelected>>", self.product_selected)
+        # Dynamically load product types
+        self.load_product_types_for_rental()
+        
+        # Number of Days
+        Label(product_frame, text="Rental Period:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=2, sticky="w", padx=5, pady=5)
+        self.cboNoDays = ttk.Combobox(product_frame, textvariable=self.NoDays, state='readonly',
+                                     font=('Segoe UI', 10))
+        self.cboNoDays.grid(row=0, column=3, sticky="ew", padx=5, pady=5)
+        self.cboNoDays.bind("<<ComboboxSelected>>", self.days_selected)
+        self.cboNoDays['values'] = ('Select', '1-30 days', '31-90 days', '91-270 days', '271-365 days')
+        self.cboNoDays.current(0)
+        
+        # Product Code
+        Label(product_frame, text="Product Code:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=0, sticky="w", pady=5)
+        Entry(product_frame, textvariable=self.ProdCode, font=('Segoe UI', 10), state='readonly').grid(row=1, column=1, sticky="ew", padx=5, pady=5)
+        
+        # Cost Per Day
+        Label(product_frame, text="Daily Rate:", font=('Segoe UI', 10, 'bold')).grid(row=1, column=2, sticky="w", padx=5, pady=5)
+        Entry(product_frame, textvariable=self.CostPDay, font=('Segoe UI', 10), state='readonly').grid(row=1, column=3, sticky="ew", padx=5, pady=5)
+        
+        # Payment Terms
+        Label(product_frame, text="Credit Limit:", font=('Segoe UI', 10, 'bold')).grid(row=2, column=0, sticky="w", pady=5)
+        self.cboCreLimit = ttk.Combobox(product_frame, textvariable=self.CreLimit, state='readonly', 
+                                       font=('Segoe UI', 10))
+        self.cboCreLimit.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        self.cboCreLimit['values'] = ('Select', '£150', '£200', '£250', '£300')
+        self.cboCreLimit.current(0)
+        
+        Label(product_frame, text="Discount:", font=('Segoe UI', 10, 'bold')).grid(row=2, column=2, sticky="w", pady=5)
+        self.cboDiscount = ttk.Combobox(product_frame, textvariable=self.Discount, state='readonly', 
+                                       font=('Segoe UI', 10))
+        self.cboDiscount.grid(row=2, column=3, sticky="ew", padx=5, pady=5)
+        self.cboDiscount['values'] = ('Select', '0%', '5%', '10%', '15%', '20%')
+        self.cboDiscount.current(0)
+        
+        # Payment Method
+        Label(product_frame, text="Payment Method:", font=('Segoe UI', 10, 'bold')).grid(row=3, column=0, sticky="w", pady=5)
+        self.cboPaymentM = ttk.Combobox(product_frame, textvariable=self.PaymentM, state='readonly',
+                                       font=('Segoe UI', 10))
+        self.cboPaymentM.grid(row=3, column=1, sticky="ew", padx=5, pady=5)
+        self.cboPaymentM['values'] = ('Select', 'Cash', 'Visa Card', 'Master Card', 'Debit Card')
+        self.cboPaymentM.current(0)
+        
+        # Additional checkboxes
+        checkbox_frame = Frame(product_frame)
+        checkbox_frame.grid(row=4, column=0, columnspan=4, pady=10)
+        
+        self.chk1 = Checkbutton(checkbox_frame, text="Credit Check Required", variable=self.var1, font=('Segoe UI', 9))
+        self.chk1.pack(side=LEFT, padx=10)
+        
+        self.chk2 = Checkbutton(checkbox_frame, text="Terms Agreed", variable=self.var2, font=('Segoe UI', 9))
+        self.chk2.pack(side=LEFT, padx=10)
+        
+        # Calculate button
+        Button(product_frame, text="Calculate Total", font=('Segoe UI', 12, 'bold'),
+               bg=self.colors['accent'], fg=self.colors['white'], 
+               command=self.calculate_total).grid(row=5, column=0, columnspan=2, pady=10, sticky="ew")
+        
+        # Save button
+        Button(product_frame, text="Save Rental", font=('Segoe UI', 12, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'], 
+               command=self.save_rental).grid(row=5, column=2, columnspan=2, pady=10, sticky="ew", padx=(10, 0))
