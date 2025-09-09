@@ -13,8 +13,21 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import os
 
+# Add numpy import for trend analysis
+try:
+    import numpy as np
+except ImportError:
+    # Fallback if numpy is not available
+    class np:
+        @staticmethod
+        def polyfit(x, y, deg):
+            return [0, 0]
+        
+        @staticmethod
+        def poly1d(coeffs):
+            return lambda x: [0] * len(x) if isinstance(x, list) else 0
+
 class DatabaseManager:
-    
     def __init__(self, db_name="rental_inventory.db"):
         self.db_name = db_name
         self.init_database()
@@ -70,6 +83,7 @@ class DatabaseManager:
                 FOREIGN KEY (customer_id) REFERENCES customers (customer_id)
             )
         ''')
+        
         # Create products table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS products (
@@ -98,7 +112,7 @@ class DatabaseManager:
         
         conn.commit()
         conn.close()
-        
+    
     def save_rental(self, rental_data):
         """Save rental data to database"""
         conn = sqlite3.connect(self.db_name)
@@ -138,7 +152,7 @@ class DatabaseManager:
         results = cursor.fetchall()
         conn.close()
         return results
-    
+
     def get_all_customers(self):
         """Get all customers"""
         conn = sqlite3.connect(self.db_name)
@@ -146,7 +160,8 @@ class DatabaseManager:
         cursor.execute('SELECT * FROM customers ORDER BY customer_name')
         results = cursor.fetchall()
         conn.close()
-    
+        return results
+
     # New methods for product management
     def add_product(self, product_type, product_code, cost_per_day, available_quantity):
         """Add a new product to the database."""
@@ -167,7 +182,7 @@ class DatabaseManager:
             return False
         finally:
             conn.close()
-        
+
     def update_product(self, product_id, product_type, product_code, cost_per_day, available_quantity, status):
         """Update an existing product's details."""
         conn = sqlite3.connect(self.db_name)
@@ -187,8 +202,8 @@ class DatabaseManager:
             messagebox.showerror("Error", f"Failed to update product: {str(e)}")
             return False
         finally:
-            conn.close()    
-    
+            conn.close()
+
     def delete_product(self, product_id):
         """Delete a product from the database."""
         conn = sqlite3.connect(self.db_name)
@@ -202,7 +217,7 @@ class DatabaseManager:
             return False
         finally:
             conn.close()
-    
+
     def get_all_products(self):
         """Get all products from the database."""
         conn = sqlite3.connect(self.db_name)
@@ -211,7 +226,6 @@ class DatabaseManager:
         results = cursor.fetchall()
         conn.close()
         return results
-    
 
 class ImprovedRentalInventory:
     def __init__(self, root):
@@ -234,7 +248,7 @@ class ImprovedRentalInventory:
         
         # Bind resize events
         self.root.bind('<Configure>', self.on_window_resize)
-        
+    
     def configure_responsive_styles(self):
         """Configure modern responsive UI styles"""
         self.style = ttk.Style()
@@ -426,7 +440,7 @@ class ImprovedRentalInventory:
         self.setup_responsive_analytics_tab()
         self.setup_responsive_customer_tab()
         self.setup_responsive_product_tab() # Setup Product Tab
-        
+    
     def setup_responsive_rental_tab(self):
         """Setup responsive rental tab"""
         # Create scrollable canvas
@@ -809,7 +823,7 @@ class ImprovedRentalInventory:
         
         # Load customers
         self.load_customers_tree()
-    
+
     def setup_responsive_product_tab(self): # NEW Product Tab Setup
         """Setup responsive product management tab"""
         product_main = Frame(self.product_tab, bg=self.colors['light'])
@@ -897,6 +911,7 @@ class ImprovedRentalInventory:
         # Load products
         self.load_products_tree()
     
+    # Event handlers and utility methods
     def on_window_resize(self, event):
         """Handle window resize events"""
         if event.widget == self.root:
@@ -942,7 +957,7 @@ class ImprovedRentalInventory:
         """Show add customer dialog"""
         self.notebook.select(self.customer_tab)
         self.customer_name.focus()
-    
+
     def load_product_types_for_rental(self):
         """Load available product types into the rental tab combobox."""
         try:
@@ -1131,7 +1146,7 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Receipt generation failed: {str(e)}")
-            
+    
     def save_rental(self):
         """Enhanced save rental with better validation"""
         try:
@@ -1195,7 +1210,7 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save rental: {str(e)}")
-            
+    
     def reset_form(self):
         """Enhanced form reset"""
         # Clear all variables
@@ -1232,6 +1247,27 @@ Phone: (555) 123-4567
         
         messagebox.showinfo("Reset", "Form has been reset successfully!")
     
+    def print_receipt(self):
+        """Print or save receipt"""
+        try:
+            if not self.txtReceipt.get("1.0", "end-1c").strip():
+                messagebox.showwarning("Warning", "No receipt to print. Please calculate total first.")
+                return
+            
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+                title="Save Receipt"
+            )
+            
+            if filename:
+                with open(filename, 'w') as f:
+                    f.write(self.txtReceipt.get("1.0", "end-1c"))
+                messagebox.showinfo("Success", f"Receipt saved to {filename}")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save receipt: {str(e)}")
+    
     # Database and display methods
     def load_all_rentals(self):
         """Load all rentals with customer names"""
@@ -1267,29 +1303,6 @@ Phone: (555) 123-4567
                 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load rental history: {str(e)}")
-    
-    
-    
-    def print_receipt(self):
-        """Print or save receipt"""
-        try:
-            if not self.txtReceipt.get("1.0", "end-1c").strip():
-                messagebox.showwarning("Warning", "No receipt to print. Please calculate total first.")
-                return
-            
-            filename = filedialog.asksaveasfilename(
-                defaultextension=".txt",
-                filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-                title="Save Receipt"
-            )
-            
-            if filename:
-                with open(filename, 'w') as f:
-                    f.write(self.txtReceipt.get("1.0", "end-1c"))
-                messagebox.showinfo("Success", f"Receipt saved to {filename}")
-                
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to save receipt: {str(e)}")
     
     def search_rentals(self):
         """Enhanced search functionality"""
@@ -1331,7 +1344,7 @@ Phone: (555) 123-4567
                 
         except Exception as e:
             messagebox.showerror("Error", f"Search failed: {str(e)}")
-            
+    
     def sort_treeview(self, column):
         """Sort treeview by column"""
         try:
@@ -1343,8 +1356,9 @@ Phone: (555) 123-4567
             # Rearrange items
             for index, (val, child) in enumerate(data):
                 self.history_tree.move(child, '', index)
-            messagebox.showerror("Error", f"Search failed: {str(e)}")
-
+                
+        except Exception as e:
+            pass  # Silently handle sort errors
     
     def export_to_pdf(self):
         """Enhanced PDF export"""
@@ -1513,7 +1527,7 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate analytics: {str(e)}")
-        
+    
     def show_monthly_revenue(self):
         """Show monthly revenue trends"""
         try:
@@ -1878,7 +1892,7 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
         # Clear tree selection
         for item in self.customer_tree.selection():
             self.customer_tree.selection_remove(item)
-    
+
     # Product management methods (NEW)
     def add_product_to_db(self):
         """Add a new product using form data."""
@@ -1906,7 +1920,7 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
             self.load_products_tree()
             self.load_product_types_for_rental() # Refresh rental product types
             self.clear_product_form()
-    
+
     def update_product_in_db(self):
         """Update an existing product using form data."""
         selection = self.product_tree.selection()
@@ -1957,7 +1971,7 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 self.load_products_tree()
                 self.load_product_types_for_rental() # Refresh rental product types
                 self.clear_product_form()
-    
+
     def load_products_tree(self):
         """Load products into the product tree view."""
         try:
@@ -1977,7 +1991,7 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load products: {str(e)}")
-    
+
     def on_product_select(self, event):
         """Handle product selection in the product tree view."""
         try:
@@ -1996,7 +2010,7 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 
         except Exception as e:
             pass  # Silently handle selection errors
-    
+
     def clear_product_form(self):
         """Clear product form fields."""
         self.product_id_var.set("")
