@@ -212,4 +212,26 @@ class DatabaseManager:
         conn.close()
         return results
     
-class ImprovedRentalInventory:
+class 
+:
+    
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Advanced Rental Inventory Management System")
+        self.root.state('zoomed')  # Start maximized on Windows
+        self.root.minsize(1200, 800)  # Minimum window size
+        
+        # Initialize database
+        self.db_manager = DatabaseManager()
+        
+        # Configure responsive styles
+        self.configure_responsive_styles()
+        
+        # Initialize variables
+        self.init_variables()
+        
+        # Create responsive main interface
+        self.create_responsive_interface()
+        
+        # Bind resize events
+        self.root.bind('<Configure>', self.on_window_resize)
