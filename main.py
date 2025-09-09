@@ -1131,6 +1131,70 @@ Phone: (555) 123-4567
             
         except Exception as e:
             messagebox.showerror("Error", f"Receipt generation failed: {str(e)}")
+            
+    def save_rental(self):
+        """Enhanced save rental with better validation"""
+        try:
+            # Comprehensive validation
+            if not self.Total.get() or self.Total.get() == "":
+                messagebox.showerror("Error", "Please calculate total first")
+                return
+            
+            if self.customer_combo.get() == "Select Customer":
+                messagebox.showerror("Error", "Please select a customer")
+                return
+            
+            if not all([self.ProdType.get(), self.NoDays.get(), self.PaymentM.get()]):
+                messagebox.showerror("Error", "Please fill in all required fields")
+                return
+            
+            # Get customer ID
+            selected_customer = self.customer_combo.get()
+            customer_id = self.customer_dict[selected_customer]['id']
+            
+            # Prepare rental data
+            rental_data = (
+                customer_id,
+                self.Receipt_Ref.get(),
+                self.ProdType.get(),
+                self.ProdCode.get(),
+                self.NoDays.get(),
+                float(self.CostPDay.get().replace('£', '')) if self.CostPDay.get() else 0,
+                self.AcctOpen.get() or 'No',
+                self.AppDate.get() or str(datetime.date.today()),
+                self.NextCreditReview.get() or '',
+                int(self.LastCreditReview.get()) if self.LastCreditReview.get() else 0,
+                self.DateRev.get() or '',
+                self.CreLimit.get() or '',
+                self.CreCheck.get() or 'No',
+                int(self.SettDueDay.get()) if self.SettDueDay.get() else 0,
+                self.PaymentD.get() or 'No',
+                float(self.Discount.get().replace('%', '')) if self.Discount.get() and self.Discount.get() != 'Select' else 0,
+                self.Deposit.get() or 'No',
+                self.PayDueDay.get() or '',
+                self.PaymentM.get(),
+                self.var1.get(),
+                self.var2.get(),
+                self.var3.get(),
+                self.var4.get(),
+                float(self.Tax.get().replace('£', '')) if self.Tax.get() else 0,
+                float(self.SubTotal.get().replace('£', '')) if self.SubTotal.get() else 0,
+                float(self.Total.get().replace('£', '')) if self.Total.get() else 0
+            )
+            
+            self.db_manager.save_rental(rental_data)
+            messagebox.showinfo("Success", f"Rental {self.Receipt_Ref.get()} saved successfully!")
+            
+            # Refresh displays
+            self.load_all_rentals()
+            self.refresh_quick_stats()
+            
+            # Ask if user wants to reset form
+            if messagebox.askyesno("Continue", "Would you like to create another rental?"):
+                self.reset_form()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save rental: {str(e)}")
 
 
 if __name__ == '__main__':
