@@ -1074,6 +1074,63 @@ class ImprovedRentalInventory:
             messagebox.showerror("Error", "Please enter valid numeric values")
         except Exception as e:
             messagebox.showerror("Error", f"Calculation failed: {str(e)}")
+    
+    def generate_receipt(self, subtotal, tax, total):
+        """Generate formatted receipt"""
+        try:
+            # Generate receipt reference
+            receipt_ref = f"BILL{random.randint(10000, 99999)}"
+            self.Receipt_Ref.set(receipt_ref)
+            
+            # Get customer info
+            customer_info = "Walk-in Customer"
+            if self.customer_combo.get() != "Select Customer":
+                customer_info = self.customer_combo.get()
+            
+            # Clear and generate receipt
+            self.txtReceipt.delete("1.0", END)
+            
+            receipt_text = f"""
+═══════════════════════════════════════════════
+           RENTAL INVOICE
+═══════════════════════════════════════════════
+
+Receipt Ref:     {receipt_ref}
+Date:           {datetime.date.today()}
+Customer:       {customer_info}
+
+─────────────────────────────────────────────────
+RENTAL DETAILS:
+─────────────────────────────────────────────────
+Product:        {self.ProdType.get()}
+Product Code:   {self.ProdCode.get()}
+Rental Period:  {self.NoDays.get()}
+Daily Rate:     {self.CostPDay.get()}
+Total Days:     {self.LastCreditReview.get()}
+
+Payment Method: {self.PaymentM.get()}
+Discount:       {self.Discount.get()}
+
+─────────────────────────────────────────────────
+BILLING SUMMARY:
+─────────────────────────────────────────────────
+Subtotal:       £{subtotal:.2f}
+Tax (15%):      £{tax:.2f}
+─────────────────────────────────────────────────
+TOTAL:          £{total:.2f}
+═══════════════════════════════════════════════
+
+Thank you for choosing our rental service!
+Contact us: info@rentalservice.com
+Phone: (555) 123-4567
+
+═══════════════════════════════════════════════
+"""
+            
+            self.txtReceipt.insert("1.0", receipt_text)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Receipt generation failed: {str(e)}")
 
 
 if __name__ == '__main__':
