@@ -1867,6 +1867,17 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
                 
         except Exception as e:
             pass  # Silently handle selection errors
+    
+    def clear_customer_form(self):
+        """Clear customer form fields"""
+        self.customer_name.set("")
+        self.customer_phone.set("")
+        self.customer_email.set("")
+        self.customer_address.set("")
+        
+        # Clear tree selection
+        for item in self.customer_tree.selection():
+            self.customer_tree.selection_remove(item)
 
 
 if __name__ == '__main__':
