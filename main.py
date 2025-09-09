@@ -926,3 +926,24 @@ class ImprovedRentalInventory:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load customers: {str(e)}")
+
+
+if __name__ == '__main__':
+    try:
+        root = tk.Tk()
+        app = ImprovedRentalInventory(root)
+        
+        # Center window on screen
+        root.update_idletasks()
+        x = (root.winfo_screenwidth() // 2) - (1400 // 2)
+        y = (root.winfo_screenheight() // 2) - (900 // 2)
+        root.geometry(f"1400x900+{x}+{y}")
+        
+        root.mainloop()
+        
+    except Exception as e:
+        import tkinter.messagebox as msg
+        msg.showerror("Application Error", f"Failed to start application:\n{str(e)}")
+        print(f"Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
