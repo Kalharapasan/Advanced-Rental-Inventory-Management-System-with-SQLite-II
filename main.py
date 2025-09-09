@@ -943,6 +943,17 @@ class ImprovedRentalInventory:
         self.notebook.select(self.customer_tab)
         self.customer_name.focus()
     
+    def load_product_types_for_rental(self):
+        """Load available product types into the rental tab combobox."""
+        try:
+            products = self.db_manager.get_all_products()
+            product_types = sorted(list(set([p[1] for p in products if p[4] > 0 and p[5] == 'Available']))) # Only available products
+            
+            self.cboProdType['values'] = ['Select'] + product_types
+            self.cboProdType.current(0)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load product types: {str(e)}")
+    
 
 
 if __name__ == '__main__':
