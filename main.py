@@ -426,3 +426,47 @@ class ImprovedRentalInventory:
         self.setup_responsive_analytics_tab()
         self.setup_responsive_customer_tab()
         self.setup_responsive_product_tab() # Setup Product Tab
+        
+    def setup_responsive_rental_tab(self):
+        """Setup responsive rental tab"""
+        # Create scrollable canvas
+        canvas = Canvas(self.rental_tab, bg=self.colors['light'])
+        scrollbar = ttk.Scrollbar(self.rental_tab, orient="vertical", command=canvas.yview)
+        scrollable_frame = Frame(canvas, bg=self.colors['light'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Main grid layout
+        main_grid = Frame(scrollable_frame, bg=self.colors['light'])
+        main_grid.pack(fill=BOTH, expand=True, padx=20, pady=20)
+        
+        # Configure grid weights for responsiveness
+        main_grid.grid_columnconfigure(0, weight=1)
+        main_grid.grid_columnconfigure(1, weight=1)
+        main_grid.grid_rowconfigure(0, weight=0)
+        main_grid.grid_rowconfigure(1, weight=0)
+        main_grid.grid_rowconfigure(2, weight=1)
+        
+        # Customer Selection Section
+        self.create_customer_selection_section(main_grid)
+        
+        # Product and Pricing Section
+        self.create_product_section(main_grid)
+        
+        # Payment and Receipt Section
+        self.create_payment_section(main_grid)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Bind mousewheel to canvas
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
