@@ -202,3 +202,12 @@ class DatabaseManager:
             return False
         finally:
             conn.close()
+    
+    def get_all_products(self):
+        """Get all products from the database."""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM products ORDER BY product_type, product_code')
+        results = cursor.fetchall()
+        conn.close()
+        return results
