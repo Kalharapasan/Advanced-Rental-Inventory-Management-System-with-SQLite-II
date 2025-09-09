@@ -1997,6 +1997,18 @@ Rentals per Customer: {total_rentals/unique_customers if unique_customers > 0 el
         except Exception as e:
             pass  # Silently handle selection errors
     
+    def clear_product_form(self):
+        """Clear product form fields."""
+        self.product_id_var.set("")
+        self.product_type_var.set("")
+        self.product_code_var.set("")
+        self.cost_per_day_var.set("")
+        self.available_quantity_var.set("")
+        self.product_status_var.set("Available") # Default status
+        
+        # Clear tree selection
+        for item in self.product_tree.selection():
+            self.product_tree.selection_remove(item)
 
 if __name__ == '__main__':
     try:
