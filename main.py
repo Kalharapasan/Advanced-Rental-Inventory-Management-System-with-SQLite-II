@@ -692,3 +692,40 @@ class ImprovedRentalInventory:
         
         # Load initial data
         self.load_all_rentals()
+    
+    def setup_responsive_analytics_tab(self):
+        """Setup responsive analytics tab"""
+        analytics_main = Frame(self.analytics_tab, bg=self.colors['light'])
+        analytics_main.pack(fill=BOTH, expand=True, padx=20, pady=20)
+        
+        # Control panel
+        control_frame = ttk.LabelFrame(analytics_main, text="Analytics Controls", padding=15)
+        control_frame.pack(fill=X, pady=(0, 20))
+        
+        Button(control_frame, text="Product Distribution", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['accent'], fg=self.colors['white'],
+               command=self.show_product_distribution).pack(side=LEFT, padx=(0, 10))
+        
+        Button(control_frame, text="Monthly Revenue", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['success'], fg=self.colors['white'],
+               command=self.show_monthly_revenue).pack(side=LEFT, padx=(0, 10))
+        
+        Button(control_frame, text="Customer Statistics", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['warning'], fg=self.colors['white'],
+               command=self.show_customer_stats).pack(side=LEFT, padx=(0, 10))
+        
+        Button(control_frame, text="Refresh Charts", font=('Segoe UI', 10, 'bold'),
+               bg=self.colors['secondary'], fg=self.colors['white'],
+               command=self.refresh_charts).pack(side=RIGHT)
+        
+        # Chart area
+        chart_frame = Frame(analytics_main, bg=self.colors['white'], relief='raised', bd=2)
+        chart_frame.pack(fill=BOTH, expand=True)
+        
+        # Create matplotlib figure
+        self.fig = Figure(figsize=(12, 8), facecolor=self.colors['white'])
+        self.canvas = FigureCanvasTkAgg(self.fig, chart_frame)
+        self.canvas.get_tk_widget().pack(fill=BOTH, expand=True, padx=10, pady=10)
+        
+        # Initialize with default chart
+        self.show_product_distribution()
