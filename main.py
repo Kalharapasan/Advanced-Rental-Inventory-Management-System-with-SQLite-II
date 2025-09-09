@@ -579,3 +579,55 @@ class ImprovedRentalInventory:
         Button(product_frame, text="Save Rental", font=('Segoe UI', 12, 'bold'),
                bg=self.colors['success'], fg=self.colors['white'], 
                command=self.save_rental).grid(row=5, column=2, columnspan=2, pady=10, sticky="ew", padx=(10, 0))
+    
+    def create_payment_section(self, parent):
+        """Create payment and receipt section"""
+        payment_frame = ttk.LabelFrame(parent, text="Billing & Receipt", padding=15)
+        payment_frame.grid(row=1, column=1, sticky="nsew", padx=(10, 0), pady=(0, 10))
+        
+        # Configure grid
+        payment_frame.grid_rowconfigure(1, weight=1)
+        payment_frame.grid_columnconfigure(0, weight=1)
+        
+        # Billing summary
+        billing_frame = Frame(payment_frame)
+        billing_frame.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+        
+        billing_frame.grid_columnconfigure(1, weight=1)
+        
+        Label(billing_frame, text="Subtotal:", font=('Segoe UI', 10, 'bold')).grid(row=0, column=0, sticky="w", pady=2)
+        Entry(billing_frame, textvariable=self.SubTotal, font=('Segoe UI', 10), state='readonly').grid(row=0, column=1, sticky="ew", padx=(10, 0), pady=2)
+        
+        Label(billing_frame, text="Tax (15%):", font=('Segoe UI', 10, 'bold')).grid(row=1, column=0, sticky="w", pady=2)
+        Entry(billing_frame, textvariable=self.Tax, font=('Segoe UI', 10), state='readonly').grid(row=1, column=1, sticky="ew", padx=(10, 0), pady=2)
+        
+        Label(billing_frame, text="Total:", font=('Segoe UI', 12, 'bold')).grid(row=2, column=0, sticky="w", pady=5)
+        Entry(billing_frame, textvariable=self.Total, font=('Segoe UI', 12, 'bold'), state='readonly').grid(row=2, column=1, sticky="ew", padx=(10, 0), pady=5)
+        
+        # Receipt display
+        receipt_label = Label(payment_frame, text="Receipt Preview:", font=('Segoe UI', 10, 'bold'))
+        receipt_label.grid(row=1, column=0, sticky="w", pady=(10, 5))
+        
+        self.txtReceipt = Text(payment_frame, font=('Consolas', 9), wrap=WORD, height=20)
+        receipt_scroll = ttk.Scrollbar(payment_frame, orient=VERTICAL, command=self.txtReceipt.yview)
+        self.txtReceipt.configure(yscrollcommand=receipt_scroll.set)
+        
+        receipt_container = Frame(payment_frame)
+        receipt_container.grid(row=2, column=0, sticky="nsew", pady=(0, 10))
+        receipt_container.grid_rowconfigure(0, weight=1)
+        receipt_container.grid_columnconfigure(0, weight=1)
+        
+        self.txtReceipt.grid(row=0, column=0, sticky="nsew", in_=receipt_container)
+        receipt_scroll.grid(row=0, column=1, sticky="ns", in_=receipt_container)
+        
+        # Action buttons
+        button_frame = Frame(payment_frame)
+        button_frame.grid(row=3, column=0, sticky="ew", pady=(10, 0))
+        
+        Button(button_frame, text="Print Receipt", font=('Segoe UI', 10),
+               bg=self.colors['secondary'], fg=self.colors['white'],
+               command=self.print_receipt).pack(side=LEFT, padx=(0, 10))
+        
+        Button(button_frame, text="Reset Form", font=('Segoe UI', 10),
+               bg=self.colors['warning'], fg=self.colors['white'],
+               command=self.reset_form).pack(side=LEFT)
