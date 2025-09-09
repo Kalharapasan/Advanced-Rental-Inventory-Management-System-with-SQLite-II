@@ -902,3 +902,27 @@ class ImprovedRentalInventory:
         if event.widget == self.root:
             # Update quick stats when window resizes
             pass
+    
+    def load_customers(self):
+        """Load customers into combobox"""
+        try:
+            customers = self.db_manager.get_all_customers()
+            customer_list = ["Select Customer"]
+            self.customer_dict = {}
+            
+            for customer in customers:
+                display_name = f"{customer[1]} (ID: {customer[0]})"
+                customer_list.append(display_name)
+                self.customer_dict[display_name] = {
+                    'id': customer[0],
+                    'name': customer[1],
+                    'phone': customer[2] or '',
+                    'email': customer[3] or '',
+                    'address': customer[4] or ''
+                }
+            
+            self.customer_combo['values'] = customer_list
+            self.customer_combo.current(0)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to load customers: {str(e)}")
