@@ -212,9 +212,8 @@ class DatabaseManager:
         conn.close()
         return results
     
-class 
-:
-    
+
+class ImprovedRentalInventory:
     def __init__(self, root):
         self.root = root
         self.root.title("Advanced Rental Inventory Management System")
@@ -288,3 +287,54 @@ class
         self.style.map('TNotebook.Tab',
                       background=[('selected', self.colors['accent']),
                                 ('active', self.colors['warning'])])
+    
+    def init_variables(self):
+        """Initialize all tkinter variables"""
+        # Rental variables
+        self.AcctOpen = StringVar()
+        self.AppDate = StringVar()
+        self.NextCreditReview = StringVar()
+        self.LastCreditReview = StringVar()
+        self.DateRev = StringVar()
+        self.ProdCode = StringVar()
+        self.ProdType = StringVar()
+        self.NoDays = StringVar()
+        self.CostPDay = StringVar()
+        self.CreLimit = StringVar()
+        self.CreCheck = StringVar()
+        self.SettDueDay = StringVar()
+        self.PaymentD = StringVar()
+        self.Discount = StringVar()
+        self.Deposit = StringVar()
+        self.PayDueDay = StringVar()
+        self.PaymentM = StringVar()
+        
+        # Checkbox variables
+        self.var1 = IntVar()  # Check Credit
+        self.var2 = IntVar()  # Term Agreed
+        self.var3 = IntVar()  # Account On Hold
+        self.var4 = IntVar()  # Restrict Mailing
+        
+        # Calculation variables
+        self.Tax = StringVar()
+        self.SubTotal = StringVar()
+        self.Total = StringVar()
+        self.Receipt_Ref = StringVar()
+        
+        # Customer variables
+        self.customer_id = StringVar()
+        self.customer_name = StringVar()
+        self.customer_phone = StringVar()
+        self.customer_email = StringVar()
+        self.customer_address = StringVar()
+
+        # Product variables (NEW)
+        self.product_id_var = StringVar()
+        self.product_type_var = StringVar()
+        self.product_code_var = StringVar()
+        self.cost_per_day_var = StringVar()
+        self.available_quantity_var = StringVar()
+        self.product_status_var = StringVar()
+        
+        # Search variable
+        self.search_var = StringVar()
