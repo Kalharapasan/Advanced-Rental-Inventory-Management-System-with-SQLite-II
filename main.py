@@ -350,3 +350,24 @@ class ImprovedRentalInventory:
         
         # Notebook for tabs
         self.create_responsive_notebook()
+    
+    def create_header(self):
+        """Create responsive header"""
+        header_frame = Frame(self.main_container, bg=self.colors['primary'], height=80)
+        header_frame.pack(fill=X, padx=20, pady=10)
+        header_frame.pack_propagate(False)
+        
+        # Title
+        title_label = Label(header_frame, 
+                          text="Rental Inventory Management System", 
+                          font=('Segoe UI', 24, 'bold'), 
+                          bg=self.colors['primary'], 
+                          fg=self.colors['white'])
+        title_label.pack(side=LEFT, pady=20)
+        
+        # Quick stats frame
+        stats_frame = Frame(header_frame, bg=self.colors['primary'])
+        stats_frame.pack(side=RIGHT, pady=20)
+        
+        self.create_quick_stats(stats_frame)
+    
